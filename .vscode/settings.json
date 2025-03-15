@@ -2,5 +2,6 @@
     "C_Cpp.errorSquiggles": "disabled",
     "files.associations": {
         "xiosbase": "cpp"
-    }
+    },
+    "C_Cpp.default.compilerPath": "cl.exe"
 }
