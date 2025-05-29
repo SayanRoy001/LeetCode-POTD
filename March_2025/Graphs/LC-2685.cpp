@@ -2,87 +2,44 @@
 using namespace std;
 
 class Solution {
+private:
+    void bfs(int start, vector<int>& visited, vector<vector<int>>& adj,
+             int &countN, int &countE) {
+        queue<int> q;
+        q.push(start);
+        visited[start] = 1;
+        while (!q.empty()) {
+            int node = q.front();
+            countN++;
+            q.pop();
+            for (auto it : adj[node]) {
+                countE++;
+                if (visited[it] == 0) {
+                    q.push(it);
+                    visited[it] = 1;
+                }
+            }
+        }
+    }
+
 public:
-    void Bfs(int start,vector<vector<int>>& adj,int &best2,
-            vector<int>&vis,int slvl){
-        fill(vis.begin(),vis.end(),0);
-        queue<pair<int,int>>q;
-        //level,node
-        q.push({slvl,start});
-        vis[start]=1;
-        int even=0;
-        while(!q.empty()){
-            auto[level,node]=q.front();q.pop();
-            if(level%2==0) even++;
-            for(auto it:adj[node]){
-                int adjNode=it;
-                if(!vis[adjNode]){
-                    vis[adjNode]=1;
-                    q.push({level+1,adjNode});
-                }     
+    int countCompleteComponents(int n, vector<vector<int>>& edges) {
+        vector<vector<int>> adj(n);
+        for (auto &it : edges) {
+            adj[it[0]].push_back(it[1]);
+            adj[it[1]].push_back(it[0]);
+        }
+        int ans = 0;
+        vector<int> visited(n, 0);
+        for (int i = 0; i < n; i++) {
+            if (visited[i] == 0) {
+                int countN = 0;
+                int countE = 0;
+                bfs(i, visited, adj, countN, countE);
+                if (countE / 2 == (countN * (countN - 1) / 2)) {
+                    ans++;
+                }
             }
-        }
-        best2=max(best2,even);
-    }
-
-    void Bfs2(int start,vector<vector<int>>& adj,
-            vector<int>&vis,int slvl, vector<int>&oddOrEven){
-        fill(vis.begin(),vis.end(),0);
-        queue<pair<int,int>>q;
-        //level,node
-        q.push({slvl,start});
-        vis[start]=1;
-        while(!q.empty()){
-            auto[level,node]=q.front();q.pop();
-            if(level%2==0) oddOrEven[node]=1;
-            for(auto it:adj[node]){
-                int adjNode=it;
-                if(!vis[adjNode]){
-                    vis[adjNode]=1;
-                    q.push({level+1,adjNode});
-                }     
-            }
-        }
-    }
-
-    vector<int> maxTargetNodes(vector<vector<int>>& edges1, vector<vector<int>>& edges2) {
-        int n = edges1.size() + 1;
-        int m = edges2.size() + 1;
-        vector<int> vis(max(n, m), 0);
-        
-        // build adjacency for tree2
-        vector<vector<int>> adj2(m);
-        for(auto &edge: edges2) {
-            int u = edge[0], v = edge[1];
-            adj2[u].push_back(v);
-            adj2[v].push_back(u);
-        }
-        
-        // build adjacency for tree1
-        vector<vector<int>> adj1(n);
-        for(auto &edge: edges1) {
-            int u = edge[0], v = edge[1];
-            adj1[u].push_back(v);
-            adj1[v].push_back(u);
-        }
-        
-        // analyze tree2
-        int best2 = 0;
-        Bfs(0, adj2, best2, vis, 1);
-        Bfs(adj2[0][0], adj2, best2, vis, 1);
-        
-        // analyze tree1
-        int besteven1 = 0, bestodd1 = 0;
-        Bfs(0, adj1, besteven1, vis, 0);
-        Bfs(adj1[0][0], adj1, bestodd1, vis, 0);
-        
-        vector<int> oddOrEven(max(n, m), 0);
-        Bfs2(0, adj1, vis, 0, oddOrEven);
-        
-        // compute answer per node
-        vector<int> ans(n);
-        for(int i = 0; i < n; i++) {
-            ans[i] = (oddOrEven[i] ? besteven1 : bestodd1) + best2;
         }
         return ans;
     }
@@ -92,22 +49,16 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int e1, e2;
-    cin >> e1;
-    vector<vector<int>> edges1(e1, vector<int>(2));
-    for(int i = 0; i < e1; i++) {
-        cin >> edges1[i][0] >> edges1[i][1];
-    }
-    cin >> e2;
-    vector<vector<int>> edges2(e2, vector<int>(2));
-    for(int i = 0; i < e2; i++) {
-        cin >> edges2[i][0] >> edges2[i][1];
+    int n, m;
+    cin >> n >> m;
+    vector<vector<int>> edges(m, vector<int>(2));
+    for (int i = 0; i < m; i++) {
+        cin >> edges[i][0] >> edges[i][1];
     }
 
     Solution sol;
-    vector<int> result = sol.maxTargetNodes(edges1, edges2);
-    for(int v : result) cout << v << " ";
-    cout << '\n';
+    int result = sol.countCompleteComponents(n, edges);
+    cout << result << '\n';
 
     return 0;
 }
